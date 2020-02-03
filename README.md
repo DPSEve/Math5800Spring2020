@@ -21,6 +21,7 @@ References
 - [A Survey and Critique of Multiagent Deep Reinforcement Learning](https://arxiv.org/abs/1810.05587) This paper provides an overview of multi-agent learning techniques and algorithms in the literature. This is a helpful paper for exploring possibilities.
 
 
+- [Reinforcement Learning by Sutton and Barto](https://mitpress.mit.edu/books/reinforcement-learning-second-edition) A fundamental book on reinforcement learning, the primary machine learning topic for teaching machines to learn games.
 
 - Games and Decisions by Luce and Raiffa. 
       {Chris: This is an older text by Dover that Chris has read. It goes over the mathematical fundamentals of combinatorial game theory, includes definitions and descriptions for zero-sum games, imperfecti information, et cetera. A more modern reference incorporating algorithms and machine learning would be good.}
