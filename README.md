@@ -14,9 +14,9 @@ References
 - The associated platform for this article is found at: https://github.com/deepmind/hanabi-learning-environment
 
 - [Simplified Action Decoder for Deep Multi-Agent Reinforcement Learning 2020](https://openreview.net/forum?id=B1xm3RVtwB)
-- [With asscoiated code](https://colab.research.google.com/drive/1Cvs4GuFvHEdvb7tVJQVvQOviAkRf97r7) {Chris: What does the code actually do?} 
+- [With associated code](https://colab.research.google.com/drive/1Cvs4GuFvHEdvb7tVJQVvQOviAkRf97r7) {Chris: What does the code actually do?} 
 
-- [Bayesian Action Decoder](https://explore.openaire.eu/search/publication?articleId=od________18::0e0aaae71c134766acf27427f97258be) This reference dicusses multi-agent learning models, and introduces a simple "two matrix game" as an example of a ,multi=agent game. The aforementioned code plays this game.
+- [Bayesian Action Decoder](https://explore.openaire.eu/search/publication?articleId=od________18::0e0aaae71c134766acf27427f97258be) This reference dicusses multi-agent learning models, and introduces a simple "two matrix game" as an example of a multi-agent game. The aforementioned code plays this game.
 
 - [A Survey and Critique of Multiagent Deep Reinforcement Learning](https://arxiv.org/abs/1810.05587) This paper provides an overview of multi-agent learning techniques and algorithms in the literature. This is a helpful paper for exploring possibilities.
 
