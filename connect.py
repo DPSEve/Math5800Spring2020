@@ -103,31 +103,32 @@ def checkforwin(brd): #Assumes only one win state can exist. More efficient to c
 
 
 def montecarlo(aip, brd): #Monte Carlo approach. aip is AI Player (a number, e.g. 1 or 2)
-	ppmc = 5 #(Random) Paths Per Move Count
+	ppmc = 10 #(Random) Paths Per Move Count
 	width = len(brd[0])
+#	print(str(width) + " WIDTH")
 	wincounter = np.zeros([width])
 	totalpaths = ppmc * width
 	counter = 0
 	for k in range(width):
 		for paths in range(ppmc):
-			workboard = brd
+			workboard = brd.copy()
+			if checkforwin(workboard) == -1:
+				break
 			placer(workboard, k, aip)
-			active = (aip % 1) + 1
-			while checkforwin(workboard) != 0:
-				newworkboard = placer(workboard, np.random.randint(width), active)
-				if newworkboard.all() == workboard.all():
-					break
-				else:
-					workboard = newworkboard
-				print(workboard)
+			active = (aip % 2) + 1
+		#	print(workboard)
+			while checkforwin(workboard) == 0:
+				workboard = placer(workboard, np.random.randint(width), active)
+#				print(workboard)
+				active = (active % 2) + 1
 			counter += 1
-			print( str( (counter/totalpaths) * 100 ) + " " + str(counter) + " " + str(totalpaths))
-			print(wincounter)
+			#print( str( (counter/totalpaths) * 100 ) + " " + str(counter) + " " + str(totalpaths))
+			#print(wincounter)
 			winner = checkforwin(workboard)
 			if winner == aip:
 				wincounter[k] += 1
-	print(wincounter)
-	return wincounter.index(max(wincounter))
+	print(str(wincounter) + " Player " + str(aip))
+	return np.int(np.amin(np.where(wincounter == np.amax(wincounter))))
 
 
 
@@ -149,6 +150,26 @@ placer(4, 1)
 gameover = False
 active = 1
 
+
+#AI VS AI CODE
+
+while gameover == False:
+	aimove = montecarlo(active, board)
+	placer(board, aimove, active)
+	active = (active % 2) + 1
+	whowon = checkforwin(board)
+	if whowon != 0:
+		print(board)
+		if whowon == 1:
+			print("First AI Won")
+		elif whowon == 2:
+			print("Second AI Won")
+		else:
+			print("TIE")
+		gameover = True
+
+#ONE PLAYER VS AI CODE
+"""
 while gameover == False:
 	print(board)
 	move = input("Which column to play? ")
@@ -163,14 +184,14 @@ while gameover == False:
 		break
 	aimove = montecarlo(2, board)
 	placer(board, aimove, 2)
-	print("The AI played in column " + str(aimove) + ".")
+	print("The AI played in column " + str(aimove+1) + ".")
 	whowon = checkforwin(board)
 	if whowon != 0:
 		print(board)
 		print("The computer won! :(")
 		break
 
-
+"""
 
 #TWO PLAYER GAME CODE
 
