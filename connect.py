@@ -29,24 +29,24 @@ connect = 4 #number in a row to connect
 
 board = np.zeros((rows, cols), dtype=np.int8)
 
-def placer(movechoice, player): #Drops player value into movechoice row.
-	global board
+def placer(brd, movechoice, player): #Drops player value into movechoice row.
 	for i in range(rows):
-		if board[rows - i - 1][movechoice] == 0:
-			board[rows - i - 1][movechoice] = player
-			break
+		if brd[rows - i - 1][movechoice] == 0:
+			brd[rows - i - 1][movechoice] = player
+			return brd
+	return brd #Returns board with no changes if no possible move.
 
-def checkforwin(): #Assumes only one win state can exist. More efficient to check neighbors of immediate moves.
+def checkforwin(brd): #Assumes only one win state can exist. More efficient to check neighbors of immediate moves.
 	won = False
 	winner = 0
 	#Check Verticals
 	for i in range(rows - connect+1):
 		for j in range(cols):
-			plyval = board[i][j]
+			plyval = brd[i][j]
 			if plyval != 0:
 				count = 0
 				for k in range(connect):
-					if board[i+k][j] == plyval:
+					if brd[i+k][j] == plyval:
 						count += 1
 					if count == connect:
 						won = True
@@ -55,11 +55,11 @@ def checkforwin(): #Assumes only one win state can exist. More efficient to chec
         #Check Horizontals
 	for i in range(rows):
 		for j in range(cols - connect +1):
-			plyval = board[i][j]
+			plyval = brd[i][j]
 			if plyval != 0:
 				count = 0
 				for k in range(connect):
-					if board[i][j+k] == plyval:
+					if brd[i][j+k] == plyval:
 						count+=1
 					if count == connect:
 						won = True
@@ -67,13 +67,13 @@ def checkforwin(): #Assumes only one win state can exist. More efficient to chec
 						return winner
 	#Check Diagonals \
 
-	for i in range(rows - connect):
-		for j in range(cols - connect):
-			plyval = board[i][j]
+	for i in range(rows - connect+1):
+		for j in range(cols - connect+1):
+			plyval = brd[i][j]
 			if plyval != 0:
 				count = 0
 				for k in range(connect):
-					if board[i+k][j+k] == plyval:
+					if brd[i+k][j+k] == plyval:
 						count +=1
 					if count == connect:
 						won = True
@@ -84,18 +84,52 @@ def checkforwin(): #Assumes only one win state can exist. More efficient to chec
 
 	for i in range(rows -1, connect-1, -1):
 		for j in range(cols-1, connect-1, -1):
-			plyval = board[i][j]
+			plyval = brd[i][j]
 			if plyval !=0:
 				count = 0
 				for k in range(connect):
-					if board[i - k][j-k] == plyval:
+					if brd[i - k][j-k] == plyval:
 						count += 1
 					if count == connect:
 						won = True
 						winner = plyval
 						return winner
+
+	if min(brd[0]) > 0:
+		return -1 #Board filled, tie. 
+
 	# No winner found, return 0
 	return winner
+
+
+def montecarlo(aip, brd): #Monte Carlo approach. aip is AI Player (a number, e.g. 1 or 2)
+	ppmc = 5 #(Random) Paths Per Move Count
+	width = len(brd[0])
+	wincounter = np.zeros([width])
+	totalpaths = ppmc * width
+	counter = 0
+	for k in range(width):
+		for paths in range(ppmc):
+			workboard = brd
+			placer(workboard, k, aip)
+			active = (aip % 1) + 1
+			while checkforwin(workboard) != 0:
+				newworkboard = placer(workboard, np.random.randint(width), active)
+				if newworkboard.all() == workboard.all():
+					break
+				else:
+					workboard = newworkboard
+				print(workboard)
+			counter += 1
+			print( str( (counter/totalpaths) * 100 ) + " " + str(counter) + " " + str(totalpaths))
+			print(wincounter)
+			winner = checkforwin(workboard)
+			if winner == aip:
+				wincounter[k] += 1
+	print(wincounter)
+	return wincounter.index(max(wincounter))
+
+
 
 testboard = """
 placer(1, 2)
@@ -117,17 +151,44 @@ active = 1
 
 while gameover == False:
 	print(board)
+	move = input("Which column to play? ")
+	if move == "QUIT":
+		print("Game has been force-quit.")
+		break
+	board = placer(board, int(move)-1, active)
+	whowon = checkforwin(board)
+	if whowon !=0:
+		print(board)
+		print("You won!")
+		break
+	aimove = montecarlo(2, board)
+	placer(board, aimove, 2)
+	print("The AI played in column " + str(aimove) + ".")
+	whowon = checkforwin(board)
+	if whowon != 0:
+		print(board)
+		print("The computer won! :(")
+		break
+
+
+
+#TWO PLAYER GAME CODE
+
+"""
+while gameover == False:
+	print(board)
 	move = input("Which column to play in, Player " + str(active) + "?")
 	if move == "QUIT":
 		print("Game has been force-quit.")
 		break
-	placer(int(move)-1, active)
+	board = placer(int(move)-1, active, board)
 	active = (active % 2) + 1
-	whowon = checkforwin()
+	whowon = checkforwin(board)
 	if whowon != 0:
+		print(board)
 		print("Player " + str(whowon) + " has  won!")
 		break
-
+"""
 #whowon  = checkforwin()
 
 #if whowon != 0:
