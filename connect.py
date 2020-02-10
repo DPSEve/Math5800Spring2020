@@ -25,7 +25,7 @@ import numpy as np
 
 cols =  7 #columns = number of move choices upper bound
 rows = 6 #rows are rows
-connect = 4
+connect = 4 #number in a row to connect
 
 board = np.zeros((rows, cols), dtype=np.int8)
 
@@ -36,54 +36,102 @@ def placer(movechoice, player): #Drops player value into movechoice row.
 			board[rows - i - 1][movechoice] = player
 			break
 
-def checkforwin(): #Assumes only one win state can exist.
+def checkforwin(): #Assumes only one win state can exist. More efficient to check neighbors of immediate moves.
 	won = False
 	winner = 0
 	#Check Verticals
-	for i in range(rows - connect):
+	for i in range(rows - connect+1):
 		for j in range(cols):
 			plyval = board[i][j]
 			if plyval != 0:
+				count = 0
 				for k in range(connect):
-					if board[i+k][j] != plyval:
-						break
-					won = True
-					winner = plyval
-					return winner
+					if board[i+k][j] == plyval:
+						count += 1
+					if count == connect:
+						won = True
+						winner = plyval
+						return winner
         #Check Horizontals
 	for i in range(rows):
+		for j in range(cols - connect +1):
+			plyval = board[i][j]
+			if plyval != 0:
+				count = 0
+				for k in range(connect):
+					if board[i][j+k] == plyval:
+						count+=1
+					if count == connect:
+						won = True
+						winner = plyval
+						return winner
+	#Check Diagonals \
+
+	for i in range(rows - connect):
 		for j in range(cols - connect):
 			plyval = board[i][j]
 			if plyval != 0:
+				count = 0
 				for k in range(connect):
-					if board[i][j+k] != plyval:
-						break
-					won = True
-					winner = plyval
-					return winner
+					if board[i+k][j+k] == plyval:
+						count +=1
+					if count == connect:
+						won = True
+						winner = plyval
+						return winner
+
+	#Check Diagonals /
+
+	for i in range(rows -1, connect-1, -1):
+		for j in range(cols-1, connect-1, -1):
+			plyval = board[i][j]
+			if plyval !=0:
+				count = 0
+				for k in range(connect):
+					if board[i - k][j-k] == plyval:
+						count += 1
+					if count == connect:
+						won = True
+						winner = plyval
+						return winner
+	# No winner found, return 0
 	return winner
-	#Check Diagonals \
 
-	#Check Diagonals / (check on transpose of board and use \ method)
-
+testboard = """
 placer(1, 2)
-#placer(1, 1)
-#placer(1, 1)
-#placer(1, 1)
-#placer(1, 2)
+placer(2, 2)
+placer(3, 2)
+placer(1, 2)
+placer(2, 2)
+placer(1, 2)
+placer(1, 1)
+placer(2, 1)
+placer(3, 1)
+placer(4, 1)
+"""
 
-print(board)
+#print(board)
 
-whowon  = checkforwin()
+gameover = False
+active = 1
 
-if whowon != 0:
-	print("Player " + str(whowon) + " won.")
-else:
-	print("No one has one.")
+while gameover == False:
+	print(board)
+	move = input("Which column to play in, Player " + str(active) + "?")
+	if move == "QUIT":
+		print("Game has been force-quit.")
+		break
+	placer(int(move)-1, active)
+	active = (active % 2) + 1
+	whowon = checkforwin()
+	if whowon != 0:
+		print("Player " + str(whowon) + " has  won!")
+		break
 
-#placer(5)
-#placer(4)
-#placer(3)
-#placer(4)
-#placer(5)
-#placer(3)
+#whowon  = checkforwin()
+
+#if whowon != 0:
+#	print("Player " + str(whowon) + " won.")
+#else:
+#	print("No one has won.")
+
