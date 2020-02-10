@@ -29,7 +29,7 @@ connect = 4 #number in a row to connect
 
 board = np.zeros((rows, cols), dtype=np.int8)
 
-def placer(movechoice, player): #Drops player value into movechoice columns
+def placer(movechoice, player): #Drops player value into movechoice row.
 	global board
 	for i in range(rows):
 		if board[rows - i - 1][movechoice] == 0:
