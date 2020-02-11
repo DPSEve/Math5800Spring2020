@@ -109,14 +109,19 @@ def montecarlo(aip, brd): #Monte Carlo approach. aip is AI Player (a number, e.g
 	wincounter = np.zeros([width])
 	totalpaths = ppmc * width
 	counter = 0
+    #Begin by checking possible wins in the first column
 	for k in range(width):
-		for paths in range(ppmc):
+        #For each path per move, examine ppcm random games
+		for paths in range(ppmc): 
+            #Copy the board to experiment on
 			workboard = brd.copy()
+            #Break if already at a tie
 			if checkforwin(workboard) == -1:
 				break
 			placer(workboard, k, aip)
 			active = (aip % 2) + 1
 		#	print(workboard)
+            # Play random moves until you hit a winstate ppcm times
 			while checkforwin(workboard) == 0:
 				workboard = placer(workboard, np.random.randint(width), active)
 #				print(workboard)
@@ -124,10 +129,12 @@ def montecarlo(aip, brd): #Monte Carlo approach. aip is AI Player (a number, e.g
 			counter += 1
 			#print( str( (counter/totalpaths) * 100 ) + " " + str(counter) + " " + str(totalpaths))
 			#print(wincounter)
+            #Count each game you win from that state, and tally them up
 			winner = checkforwin(workboard)
 			if winner == aip:
 				wincounter[k] += 1
 	print(str(wincounter) + " Player " + str(aip))
+    #Make the move that generated the most winstates.
 	return np.int(np.amin(np.where(wincounter == np.amax(wincounter))))
 
 
