@@ -26,6 +26,7 @@ import numpy as np
 cols =  7 #columns = number of move choices upper bound
 rows = 6 #rows are rows
 connect = 4 #number in a row to connect
+ppmc = 100 #paths per move count, number of random paths to try for each option at a state. 
 
 board = np.zeros((rows, cols), dtype=np.int8)
 
@@ -103,7 +104,7 @@ def checkforwin(brd): #Assumes only one win state can exist. More efficient to c
 
 
 def montecarlo(aip, brd): #Monte Carlo approach. aip is AI Player (a number, e.g. 1 or 2)
-	ppmc = 10 #(Random) Paths Per Move Count
+	ppmc = 100 #(Random) Paths Per Move Count
 	width = len(brd[0])
 #	print(str(width) + " WIDTH")
 	wincounter = np.zeros([width])
@@ -178,7 +179,7 @@ while gameover == False:
 		break
 	board = placer(board, int(move)-1, active)
 	whowon = checkforwin(board)
-	if whowon !=0:
+	if whowon != 0:
 		print(board)
 		print("You won!")
 		break
@@ -190,9 +191,7 @@ while gameover == False:
 		print(board)
 		print("The computer won! :(")
 		break
-
 """
-
 #TWO PLAYER GAME CODE
 
 """
