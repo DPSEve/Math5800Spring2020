@@ -23,12 +23,43 @@
 
 import numpy as np
 
-cols =  7 #columns = number of move choices upper bound
-rows = 6 #rows are rows
-connect = 4 #number in a row to connect
-ppmc = 100 #paths per move count, number of random paths to try for each option at a state. 
+#cols =  7 #columns = number of move choices upper bound
+#rows = 6 #rows are rows
+#connect = 4 #number in a row to connect
+#ppmc = 100 #paths per move count, number of random paths to try for each option at a state. 
 
-board = np.zeros((rows, cols), dtype=np.int8)
+#cols, rows, connect, ppmc = getparameters()
+
+#board = np.zeros((rows, cols), dtype=np.int8)
+
+
+def getparameters():
+	#defaults
+	cols = 7
+	rows = 6
+	connect = 4
+	ppmc = 100
+	# vvv try to extract from file
+	parafile = open("parameters", "r")
+	params = parafile.readlines()
+	paramvector = [ ["columns", cols], ["rows", rows], ["inarow", connect], ["tries", ppmc]]
+	for line in params:
+		for J in paramvector:
+			if line.split("=")[0].strip().lower() == J[0]:
+				try:
+					J[1] = int(line.split("=")[1].strip())
+				except TypeError:
+					print("Formatting for " + J[0] + "in parameter file incorrect.")
+#		if line.split("=")[0].strip().lower() == "rows":
+#			try:
+#				rows = int(line.split("=")[1].strip())
+#			except TypeError:
+#				print("Formatting for rows in parameter file incorrect.")
+	parafile.close()
+	return cols, rows, connect, ppmc
+
+def writeparameter():
+	return 1
 
 def placer(brd, movechoice, player): #Drops player value into movechoice row.
 	for i in range(rows):
@@ -132,6 +163,22 @@ def montecarlo(aip, brd): #Monte Carlo approach. aip is AI Player (a number, e.g
 	return np.int(np.amin(np.where(wincounter == np.amax(wincounter))))
 
 
+def recordgame(record, currentboard, winner = None):
+	newrecord = record.copy()
+	newrecord.append(currentboard)
+	if winner == 1 or winner == 2:
+		newrecord.append(winner)
+	return newrecord
+
+def addtodatabase(FGR): #FGR is Finished Game Record, a list of board game states and an integer indicator at the end of who won.
+	gamelength = len(FGR) - 2
+	winner = FGR[-1]
+	with open("database", "r") as database:
+		statedata = database.readlines()
+	for line in statedata:
+		lineD = line.split("&")
+		for gamestate in FGR[0, gamelength]:
+			if gamestate in
 
 testboard = """
 placer(1, 2)
@@ -153,6 +200,10 @@ active = 1
 
 
 #AI VS AI CODE
+
+cols, rows, connect, ppmc = getparameters()
+
+board = np.zeros((rows, cols), dtype=np.int8)
 
 while gameover == False:
 	aimove = montecarlo(active, board)
