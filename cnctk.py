@@ -10,7 +10,7 @@ def getparameters():
         cols = 7
         rows = 6
         connect = 4
-        ppmc = 100
+        ppmc = 10
         try:
                 testfile = open("parameters", "r")
         except FileNotFoundError:
@@ -39,7 +39,7 @@ def placer(brd, movechoice, player): #Drops player value into movechoice row.
                 if brd[rows - i - 1][movechoice] == 0:
                         brd[rows - i - 1][movechoice] = player
                         return brd
-        return brd #Returns board with no changes if no possible move.
+        return -1 #Returns board with no changes if no possible move.
 
 def checkforwin(brd): #Assumes only one win state can exist. More efficient to check neighbors of immediate moves.
         won = False
@@ -116,21 +116,22 @@ def montecarlo(aip, brd): #Monte Carlo approach. aip is AI Player (a number, e.g
         for k in range(width):
                 for paths in range(ppmc):
                         workboard = brd.copy()
-                        if checkforwin(workboard) == -1:
-                                break
-                        placer(workboard, k, aip)
-                        active = (aip % 2) + 1
+                        workboard = placer(workboard, k, aip)
+                        if type(workboard) != int:
+                            active = (aip % 2) + 1
                 #       print(workboard)
-                        while checkforwin(workboard) == 0:
-                                workboard = placer(workboard, np.random.randint(width), active)
+                            while checkforwin(workboard) == 0:
+                                    newboard = placer(workboard, np.random.randint(width), active)
 #                               print(workboard)
-                                active = (active % 2) + 1
-                        counter += 1
+                                    if type(newboard) != int:
+                                        active = (active % 2) + 1
+                                    workboard = newboard
+                            counter += 1
                         #print( str( (counter/totalpaths) * 100 ) + " " + str(counter) + " " + str(totalpaths))
                         #print(wincounter)
-                        winner = checkforwin(workboard)
-                        if winner == aip:
-                                wincounter[k] += 1
+                            winner = checkforwin(workboard)
+                            if winner == aip:
+                                    wincounter[k] += 1
         print(str(wincounter) + " Player " + str(aip))
         return np.int(np.amin(np.where(wincounter == np.amax(wincounter))))
 
@@ -317,9 +318,16 @@ def playervsplayer():
 
 def getmove(before, after): #gets column move between adjacent states. returns none if not adjacent.
     difference = after - before
+#    print(difference)
     location = np.where(difference != 0)
-    return 1
+#    print(location)
+#    print(location[1])
+    return int(location[1]), int(difference[location[0], location[1]])
 
+def blankfullcolvector():
+    global rows, cols
+    pass
+#need to add isfull vector to deal with illegal moves... 
 
 # Main Code Runs Here
 
@@ -350,11 +358,11 @@ print(TD)
 
 splitTD = TD.split("\n")
 for i in range(len(splitTD) - 2):
-    move = getmove(gamerec[i], gamerec[i+1])
-    splitTD[i] += "&M" + str(move) + "W" + str(gamerec[-1])
+    move, who = getmove(gamerec[i], gamerec[i+1])
+    splitTD[i] += "&M" + str(who) + ":" + str(move) + ":W" + str(gamerec[-1])+ "\n"
 together = ""
 for j in range(len(splitTD)):
-    together += j
+    together += splitTD[j]
 print(together)
     
 """
