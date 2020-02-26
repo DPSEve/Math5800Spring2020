@@ -39,7 +39,7 @@ def placer(brd, movechoice, player): #Drops player value into movechoice row.
                 if brd[rows - i - 1][movechoice] == 0:
                         brd[rows - i - 1][movechoice] = player
                         return brd
-        return -1 #Returns board with no changes if no possible move.
+        return brd #Returns board with no changes if no possible move.
 
 def checkforwin(brd): #Assumes only one win state can exist. More efficient to check neighbors of immediate moves.
         won = False
@@ -108,30 +108,27 @@ def checkforwin(brd): #Assumes only one win state can exist. More efficient to c
 
 
 def montecarlo(aip, brd): #Monte Carlo approach. aip is AI Player (a number, e.g. 1 or 2)
+        global fullcolvec
         ppmc = 25 #(Random) Paths Per Move Count
         width = len(brd[0])
         wincounter = np.zeros([width])
         totalpaths = ppmc * width
         counter = 0
         for k in range(width):
-                for paths in range(ppmc):
-                        workboard = brd.copy()
-                        workboard = placer(workboard, k, aip)
-                        if type(workboard) != int:
-                            active = (aip % 2) + 1
-                #       print(workboard)
-                            while checkforwin(workboard) == 0:
-                                    newboard = placer(workboard, np.random.randint(width), active)
-#                               print(workboard)
-                                    if type(newboard) != int:
-                                        active = (active % 2) + 1
-                                    workboard = newboard
-                            counter += 1
-                        #print( str( (counter/totalpaths) * 100 ) + " " + str(counter) + " " + str(totalpaths))
-                        #print(wincounter)
-                            winner = checkforwin(workboard)
-                            if winner == aip:
-                                    wincounter[k] += 1
+                if fullcolvec[k] == False:
+                        for paths in range(ppmc):
+                                workboard = brd.copy()
+                                workboard = placer(workboard, k, aip)
+                                active = (aip % 2) + 1
+                                while checkforwin(workboard) == 0:
+                                        move = np.random.randint(width)
+                                        if fullcolvec[move] == False:
+                                                workboard = placer(workboard, np.random.randint(width), active)
+                                                active = (active % 2) + 1
+                                counter += 1
+                                winner = checkforwin(workboard)
+                                if winner == aip:
+                                        wincounter[k] += 1
         print(str(wincounter) + " Player " + str(aip))
         return np.int(np.amin(np.where(wincounter == np.amax(wincounter))))
 
@@ -143,7 +140,7 @@ def recordgame(record, currentboard, winner = None):
                 record.append(winner)
         return record
 
-def invertgame(board):
+def invertgame(board): #converts game board to swap 1's and 2's
         global rows, cols
         shifter = np.ones((rows, cols))
         newboard = 3*shifter - board.copy()
@@ -203,31 +200,7 @@ def invertstate(stringboard):
     return board
 
 
-def addtodatabase(FGR): #FGR is Finished Game Record, a list of board game states and an integer indicator at the end of who won.
-        gamelength = len(FGR) - 2 #last element is winner. 2nd to last element is copy of final game state. 
-        winner = FGR[-1]
-        if winner == 1: #convert to player 2 playing and winning only
-                for gamestate in FGR[gamelength]:
-                        gamestate = invertgame(gamestate)
-        winner = 2
-        #data is formatted as gamestate&wincount&totalgames
-        database = open("database", "w+")
-        statedata = database.readlines()
-        towrite = []
-        for gamestate in FGR[gamelength]:
-                for line in statedata:
-                        lineD = line.split("&")
-                        if gamestate == np.asarray(lineD[0]):
-                                lineD[2] += int(lineD[2])
-                                if FGR[-1] == winner: #always 2
-                                        lineD[1] += int(lineD[1])
-                                else:
-                                        pass
-                                towrite.append(lineD[0] + "&" + str(lineD[1]) + "&" + str(lineD[2]))
-                        else:
-                                towrite.append(str(gamestate)+"&1&1")
-        database.writelines(towrite)
-        database.close()
+
 
 def getgamemode():
         print("Connect Four, Chris Hayes and Evelyn Nitch-Griffin")
@@ -324,10 +297,36 @@ def getmove(before, after): #gets column move between adjacent states. returns n
 #    print(location[1])
     return int(location[1]), int(difference[location[0], location[1]])
 
-def blankfullcolvector():
-    global rows, cols
-    pass
-#need to add isfull vector to deal with illegal moves... 
+def FGRconvert(gamerec): #converts to list, each item is a string like gamestate&&M1:4:W2 to mean player 1 made a move in column 4 and at the end player 2 won
+        TD = ""
+        for i in range(len(gamerec) - 3):
+                TD += convertstate(gamerec[i])+"\n"
+        splitTD = TD.split("\n")
+        for i in range(len(splitTD) - 2):
+                move, who = getmove(gamerec[i], gamerec[i+1])
+                splitTD[i] += "&M" + str(who) + ":" + str(move) + ":W" + str(gamerec[-1])+ "\n"
+        return splitTD
+
+
+#database format is gamestate&&0
+
+def addgamedata(gamedata, file): #uses format as in result of FGRconvert
+        with open(file, "r") as db:
+                data = db.readlines()
+                
+        for gamestate in gamedata:
+                splitted = list(gamestate)
+                winner = splitted[-1]
+                nextmove = splitted[-4]
+                nextmover = splitted[-6]
+                length = len(gamestate)
+                stateonly = gamestate.split("&&")[0]
+
+                for line in data:
+                        if line.split("&&")[0] == stateonly:
+                                pass
+                        pass
+                
 
 # Main Code Runs Here
 
@@ -337,6 +336,7 @@ active = 1
 cols, rows, connect, ppmc = getparameters()
 board = np.zeros((rows, cols), dtype=np.int8)
 gamerec = []
+fullcolvec = [False]*cols
 
 choosemode = getgamemode()
 if choosemode == 4: #4 is Quit
@@ -347,23 +347,9 @@ if choosemode == 1:
     playervsai()
 if choosemode == 3:
     playervsplayer()
-#print(gamerec)
-#addtodatabase(gamerec)
+gamedata = FGRconvert(gamerec)
+addgamedata(gamedata, database)
 
-print(gamerec)
-TD = ""
-for i in range(len(gamerec) - 2):
-    TD += convertstate(gamerec[i])+"\n"
-print(TD)
-
-splitTD = TD.split("\n")
-for i in range(len(splitTD) - 2):
-    move, who = getmove(gamerec[i], gamerec[i+1])
-    splitTD[i] += "&M" + str(who) + ":" + str(move) + ":W" + str(gamerec[-1])+ "\n"
-together = ""
-for j in range(len(splitTD)):
-    together += splitTD[j]
-print(together)
     
 """
 board[5][1] = 1
@@ -378,4 +364,30 @@ backboard = invertstate(conv)
 print(backboard)
 """
 
-
+"""
+def addtodatabase(FGR): #FGR is Finished Game Record, a list of board game states and an integer indicator at the end of who won.
+        gamelength = len(FGR) - 2 #last element is winner. 2nd to last element is copy of final game state. 
+        winner = FGR[-1]
+        if winner == 1: #convert to player 2 playing and winning only
+                for gamestate in FGR[gamelength]:
+                        gamestate = invertgame(gamestate)
+        winner = 2
+        #data is formatted as gamestate&wincount&totalgames
+        database = open("database", "w+")
+        statedata = database.readlines()
+        towrite = []
+        for gamestate in FGR[gamelength]:
+                for line in statedata:
+                        lineD = line.split("&")
+                        if gamestate == np.asarray(lineD[0]):
+                                lineD[2] += int(lineD[2])
+                                if FGR[-1] == winner: #always 2
+                                        lineD[1] += int(lineD[1])
+                                else:
+                                        pass
+                                towrite.append(lineD[0] + "&" + str(lineD[1]) + "&" + str(lineD[2]))
+                        else:
+                                towrite.append(str(gamestate)+"&1&1")
+        database.writelines(towrite)
+        database.close()
+"""
