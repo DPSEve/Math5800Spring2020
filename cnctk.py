@@ -4,6 +4,52 @@
 # Win occurs if a move creates "four in a row" (can adjust to K in a row)
 
 import numpy as np
+import csv
+
+class gamestatedata:
+        def __init__(self, state, winvec, totvec):
+                self.state = state #board state as string
+                self.winvec = winvec #total wins for moves 1 thru N, list of ints
+                self.totvec = totvec #total games for mvoes 1 thru N, list of ints
+
+        def update(self, move, won):
+                if won == True:
+                        self.winvec[move] += 1
+                self.totvec[move] += 1
+        def displayself(self):
+                fraction = ""
+                for i in range(len(self.winvec)):
+                        fraction += "::" + str(self.winvec[i]) + "/" + str(self.totvec[i])
+                return (self.state + fraction)
+               
+def opendatabase():
+        gsdata = []
+        with open("excelverdata.csv", newline="") as csvfile:
+                reader = csv.reader(csvfile)
+                for row in reader:
+                        length = len(row)
+                        if row[0] == "statestring":
+                                pass
+                        else:
+                                gamestate = row[0]
+                                winvec = []
+                                totvec = []
+                                for i in range(int((length - 1)/2)):
+                                        winvec.append(int(row[2*i + 1]))
+                                        totvec.append(int(row[2*i + 2]))
+                                gsdata.append(gamestatedata(gamestate, winvec.copy(), totvec.copy()))
+                                del winvec
+                                del totvec
+        return gsdata
+
+def writestate(statetoadd, move, won):
+        with open("excelverdata.csv", "w", newline="") as csvfile:
+                fieldnames = ["statestring", "m1wins", "m1tot", "m2wins", "m2tot", "m3wins", "m3tot", "m4wins", "m4tot", "m5wins", "m5tot", "m6wins", "m6tot", "m7wins", "m7tot"]
+                writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
+                writer.writeheader()
+                #(write with RAW converted gamestate-string-data here)?
+                
+
 
 def getparameters():
         #defaults
@@ -109,7 +155,7 @@ def checkforwin(brd): #Assumes only one win state can exist. More efficient to c
 
 def montecarlo(aip, brd): #Monte Carlo approach. aip is AI Player (a number, e.g. 1 or 2)
         global fullcolvec
-        ppmc = 25 #(Random) Paths Per Move Count
+        ppmc = 50 #(Random) Paths Per Move Count
         width = len(brd[0])
         wincounter = np.zeros([width])
         totalpaths = ppmc * width
@@ -129,7 +175,7 @@ def montecarlo(aip, brd): #Monte Carlo approach. aip is AI Player (a number, e.g
                                 winner = checkforwin(workboard)
                                 if winner == aip:
                                         wincounter[k] += 1
-        print(str(wincounter) + " Player " + str(aip))
+        # print(str(wincounter) + " Player " + str(aip))
         return np.int(np.amin(np.where(wincounter == np.amax(wincounter))))
 
 
@@ -209,7 +255,7 @@ def getgamemode():
         print("2: Watch Computer play itself (Pure Monte Carlo)")
         print("3: Two Players")
         print("Q: Quit")
-        print("5: Watch Computer play itself (Machine Learning) (not done)")
+        print("5: Display Database Data")
         print("- - - - - - - - - - - - - - - - - - - - - - - - - ")
         validchoice = False
         while validchoice == False:
@@ -223,6 +269,10 @@ def getgamemode():
                     return 3
             elif choice.lower() == "q" or choice.lower() == "quit":
                     return 4
+            elif choice == "5":
+                    return 5
+            elif choice == "6":
+                    return 6
             else:
                 print("No valid option was entered. Try again!")
                 validchoice = False
@@ -236,13 +286,13 @@ def aivsai():
             active = (active % 2) + 1
             whowon = checkforwin(board)
             if whowon != 0:
-                    print(board)
-                    if whowon == 1:
-                            print("First AI Won")
-                    elif whowon == 2:
-                            print("Second AI Won")
-                    else:
-                            print("TIE")
+#                    print(board)
+#                    if whowon == 1:
+#                            print("First AI Won")
+#                    elif whowon == 2:
+#                            print("Second AI Won")
+#                    else:
+#                            print("TIE")
                     gamerec = recordgame(gamerec, board, whowon)
                     gameover = True
             else:
@@ -295,19 +345,20 @@ def getmove(before, after): #gets column move between adjacent states. returns n
     location = np.where(difference != 0)
 #    print(location)
 #    print(location[1])
-    return int(location[1]), int(difference[location[0], location[1]])
+    return int(location[1])
 
 def FGRconvert(gamerec): #converts to list, each item is a string like gamestate&&M1:4:W2 to mean player 1 made a move in column 4 and at the end player 2 won
         TD = ""
         for i in range(len(gamerec) - 3):
                 TD += convertstate(gamerec[i])+"\n"
         splitTD = TD.split("\n")
-        for i in range(len(splitTD) - 2):
-                move, who = getmove(gamerec[i], gamerec[i+1])
-                splitTD[i] += "&M" + str(who) + ":" + str(move) + ":W" + str(gamerec[-1])+ "\n"
+        for i in range(len(splitTD) - 1):
+                if i != len(splitTD) - 2:
+                        move = getmove(gamerec[i], gamerec[i+1])
+                splitTD[i] += ":" + str(move) + ":" + str(gamerec[-1])
         return splitTD
 
-
+#need to make sure we don't have game state duplication. use invertgame()
 #database format is gamestate&&0
 
 def addgamedata(gamedata, file): #uses format as in result of FGRconvert
@@ -321,11 +372,64 @@ def addgamedata(gamedata, file): #uses format as in result of FGRconvert
                 nextmover = splitted[-6]
                 length = len(gamestate)
                 stateonly = gamestate.split("&&")[0]
-
+                print(winner, nextmove, nextmover, length, stateonly)
                 for line in data:
                         if line.split("&&")[0] == stateonly:
                                 pass
                         pass
+def gamestringsplit(gamestring):
+        splitted = gamestring.split(":")
+        if len(splitted) == 3:
+                winner = splitted[2]
+                move = splitted[1]
+        else:
+                move = -1
+                winner = -1
+        gamestatestring = splitted[0]
+        return [gamestatestring, int(move), int(winner)]
+
+def savetodatabase(gamerec):
+        gamedata = FGRconvert(gamerec)
+
+        newgamedata = []
+        for i in gamedata:
+                newgamedata.append(gamestringsplit(i))
+        newgamedata.pop()
+        #print(newgamedata)
+
+        olddata = []
+        with open("excelverdata.csv", newline="") as csvfile:
+                        reader = csv.reader(csvfile)
+                        for row in reader:
+                                olddata.append(row)
+        for row in newgamedata:
+                foundmatch = False
+                for row2 in olddata:
+                        if row[0] == row2[0]:
+                                foundmatch = True
+                                move = int(row[1])
+                                winner = int(row[2])
+                                row2[2*move + 2] = int(row2[2*move + 2]) + 1
+                                if winner == 2:
+                                        row2[2*move + 1] = int(row2[2*move + 1]) + 1
+                                break
+                        
+                if foundmatch == False:
+                        newL = []
+                        newL.append(row[0])
+                        move = row[1]
+                        winner = row[2]
+                        for i in range(1, 15):
+                            newL.append(0)
+                        newL[2*move + 2] += 1
+                        if winner == 2:
+                                newL[2*move +1] += 1
+                        olddata.append(newL)
+
+        with open('excelverdata.csv', mode='w') as data_file:
+                data_writer = csv.writer(data_file, delimiter=",")
+                for i in olddata:
+                        data_writer.writerow(i)
                 
 
 # Main Code Runs Here
@@ -347,8 +451,25 @@ if choosemode == 1:
     playervsai()
 if choosemode == 3:
     playervsplayer()
-gamedata = FGRconvert(gamerec)
-addgamedata(gamedata, database)
+if choosemode == 5:
+        DB = opendatabase()
+        for i in DB:
+                print(i.displayself())
+                
+if choosemode == 6:
+        games = 10
+        for i in range(games):
+                try:
+                        aivsai()
+                        savetodatabase(gamerec)
+                        print("Game " + str(i + 1) + "/" + str(games) + " successful.")
+                except:
+                        print("Error occurred in Game " + str(i + 1) + "/" + str(games) + ".")
+                gamerec = []
+                board = np.zeros((rows, cols), dtype=np.int8)
+                fullcolvec = [False]*cols
+                active = 1
+                gameover = False
 
     
 """
