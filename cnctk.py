@@ -5,12 +5,13 @@
 
 import numpy as np
 import csv
+import random
 
 class gamestatedata:
         def __init__(self, state, winvec, totvec):
                 self.state = state #board state as string
                 self.winvec = winvec #total wins for moves 1 thru N, list of ints
-                self.totvec = totvec #total games for mvoes 1 thru N, list of ints
+                self.totvec = totvec #total games for mvoes 1 thru N, list of ints   
 
         def update(self, move, won):
                 if won == True:
@@ -21,6 +22,12 @@ class gamestatedata:
                 for i in range(len(self.winvec)):
                         fraction += "::" + str(self.winvec[i]) + "/" + str(self.totvec[i])
                 return (self.state + fraction)
+        
+        def avgvec(self):
+                average = self.winvec.copy()
+                for i in len(average):
+                        average[i] = average[i]/self.totvec[i]
+                return average
                
 def opendatabase():
         gsdata = []
@@ -48,8 +55,23 @@ def writestate(statetoadd, move, won):
                 writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
                 writer.writeheader()
                 #(write with RAW converted gamestate-string-data here)?
-                
 
+def MLgetnextmove(gamestate, active): 
+        #seeks best move from historical data, otherwise does montecarlo.
+        foundhistory = False
+
+        history = opendatabase()
+        for i in history:
+                print(i.state)
+                print
+                if invertstate(i.state) == gamestate:
+                        foundhistory = True
+                        tomove = np.int(np.random.choice(np.where(i.avgvec() == np.amax(avgvec()))))
+                        print("Found Old History, Move At " + str(tomove))
+                        return tomove
+        if foundhistory == False:
+                print("Using Monte Carlo.")
+                return montecarlo(active, gamestate)
 
 def getparameters():
         #defaults
@@ -155,7 +177,7 @@ def checkforwin(brd): #Assumes only one win state can exist. More efficient to c
 
 def montecarlo(aip, brd): #Monte Carlo approach. aip is AI Player (a number, e.g. 1 or 2)
         global fullcolvec
-        ppmc = 50 #(Random) Paths Per Move Count
+        ppmc = 40 #(Random) Paths Per Move Count
         width = len(brd[0])
         wincounter = np.zeros([width])
         totalpaths = ppmc * width
@@ -175,8 +197,8 @@ def montecarlo(aip, brd): #Monte Carlo approach. aip is AI Player (a number, e.g
                                 winner = checkforwin(workboard)
                                 if winner == aip:
                                         wincounter[k] += 1
-        # print(str(wincounter) + " Player " + str(aip))
-        return np.int(np.amin(np.where(wincounter == np.amax(wincounter))))
+        print(str(wincounter) + " Player " + str(aip))
+        return np.int(np.amin(np.where(wincounter == np.amax(wincounter)))) #formerly np.amin( instead of r.choice(
 
 
 def recordgame(record, currentboard, winner = None):
@@ -256,6 +278,8 @@ def getgamemode():
         print("3: Two Players")
         print("Q: Quit")
         print("5: Display Database Data")
+        print("6: Make AI play itself 10 times, store data")
+        print("7: Machine Learning vs Monte Carlo")
         print("- - - - - - - - - - - - - - - - - - - - - - - - - ")
         validchoice = False
         while validchoice == False:
@@ -273,6 +297,8 @@ def getgamemode():
                     return 5
             elif choice == "6":
                     return 6
+            elif choice == "7":
+                    return 7
             else:
                 print("No valid option was entered. Try again!")
                 validchoice = False
@@ -297,6 +323,32 @@ def aivsai():
                     gameover = True
             else:
                     gamerec = recordgame(gamerec, board)
+
+#def MLgetnextmove(gamestate, active): 
+
+def MLvsai():
+    global cols, rows, connect, ppmc, board, gamerec, gameover, active
+    while gameover == False:
+            if active == 1:
+                    aimove = montecarlo(active, board)
+            if active == 2:
+                    aimove = MLgetnextmove(board, active)
+            placer(board, aimove, active)
+            active = (active % 2) + 1
+            whowon = checkforwin(board)
+            if whowon != 0:
+#                    print(board)
+#                    if whowon == 1:
+#                            print("First AI Won")
+#                    elif whowon == 2:
+#                            print("Second AI Won")
+#                    else:
+#                            print("TIE")
+                    gamerec = recordgame(gamerec, board, whowon)
+                    gameover = True
+            else:
+                    gamerec = recordgame(gamerec, board)
+            
             
 def playervsai():
     global cols, rows, connect, ppmc, board, gamerec, gameover, active
@@ -426,6 +478,7 @@ def savetodatabase(gamerec):
                                 newL[2*move +1] += 1
                         olddata.append(newL)
 
+        olddata = sorted(olddata, key = lambda x: x[0])
         with open('excelverdata.csv', mode='w') as data_file:
                 data_writer = csv.writer(data_file, delimiter=",")
                 for i in olddata:
@@ -457,7 +510,7 @@ if choosemode == 5:
                 print(i.displayself())
                 
 if choosemode == 6:
-        games = 10
+        games = 100
         for i in range(games):
                 try:
                         aivsai()
@@ -471,6 +524,8 @@ if choosemode == 6:
                 active = 1
                 gameover = False
 
+if choosemode == 7:
+        MLvsai()
     
 """
 board[5][1] = 1
