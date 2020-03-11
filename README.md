@@ -26,5 +26,10 @@ References
 - Games and Decisions by Luce and Raiffa. 
       {Chris: This is an older text by Dover that Chris has read. It goes over the mathematical fundamentals of combinatorial game theory, includes definitions and descriptions for zero-sum games, imperfecti information, et cetera. A more modern reference incorporating algorithms and machine learning would be good.}
       
-      
+                        To Do List
+- Split py file into several different files and make interaction very clear
+- Clean up code and comment it
+- Fix bug that happens when board is full
+- Function to combine .csv files
+- Function convert .csv files data to Evelyn version
       
