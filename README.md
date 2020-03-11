@@ -32,4 +32,7 @@ References
 - Fix bug that happens when board is full
 - Function to combine .csv files
 - Function convert .csv files data to Evelyn version
-      
+- Learn pytorch Stuph
+- Fit code into Pytorch
+- Neural Network I guess
+- Fix data-based apparoach AI
