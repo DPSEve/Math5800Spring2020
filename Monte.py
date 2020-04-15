@@ -52,14 +52,52 @@ def montecarlo(brd):
     #Outputs the given board with the move with the highest wins
     return brd.drop_piece(torch.argmax(wincounter))                     
                     
+
+def vectorize(brd):
+    """
+    Takes a board and outputs it as a string
+    """
+    flat = torch.flatten(brd.current_board)
+    vector = ""
+    for i in range(len(flat)):
+        #the item() remove the tensor attribute, we convert to integer to remove float, then string
+        vector += str(int(flat[i].item()))
+    return vector
+
+def devectorize(state):
+    """
+    Takes a database string and converts it into a torch tensor
+    """
+    tense = torch.empty(42)
+    for i in range(len(state)):
+        tense[i] = float(state[0])
+    #Reshape does exactly what it sounds like; takes the tensor and turns it into 6x7
+    return tense.reshape([6,7])
+
+
     #Record player 1 states and player 2 states separately for simplicity
+    #I guess filename isn't a necessary argument but whatever
+    #database is ["States", "Visits", "Value]
 def recordgsv(filename,brd, won):   #Record game state value
     """
     This function takes a board state, converts it to a vector, and stores it in a csv file.
     It also stores and updates the value and total number of visits for that game state.
-    won variable is bool
+    won variable is -1, 0, 1 for loss, tie, and win respectively
     """
-    
+    #load the dataframe
+    df = pd.read_csv(filename)
+    thestate = vectorize(brd)
+    if thestate in df["State"]:
+        #loc finds the appropriate entry
+        df.loc[df["State"] == thestate, "Visits"] += 1
+        #update average
+        df.loc[df["State"] == thestate, "Value"] += \
+            (won + df.loc[df["State"] == thestate, "Visits"]) \
+            /df.loc[df["State"] == thestate, "Visits"]
+    else:
+        df = df.append({"State": thestate, "Visits": 1, "Value": won}, ignore_index = True)
+    df.to_csv(filename, mode = 'w', index = False)
+        
     
     
     
