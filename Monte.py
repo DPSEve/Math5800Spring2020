@@ -5,7 +5,6 @@ Created on Tue Apr  7 23:47:53 2020
 @author: DreadEve
 """
 
-import numpy as np
 import torch
 import pandas as pd
 import random
@@ -23,7 +22,7 @@ from konnect import board
 
 def montecarlo(brd): 
     """Inputs and board class object and performs random moves following """
-    ppmc = 40 #(Random) Paths Per Move Count
+    ppmc = 20 #(Random) Paths Per Move Count
     wincounter = torch.zeros(7)
     for k in range(7):
         #First, check to see if the column is full
@@ -52,18 +51,19 @@ def montecarlo(brd):
     #Outputs the given board with the move with the highest wins
     return brd.drop_piece(torch.argmax(wincounter))                     
                     
-
+#We may need to vectorize brd.current board vs brd, so we allow it to do both
 def vectorize(brd):
     """
-    Takes a board and outputs it as a string
+    Takes a board or tensor and outputs it as a string
     """
-    flat = torch.flatten(brd.current_board)
-    vector = ""
-    for i in range(len(flat)):
+    try:
+        flat = torch.flatten(brd.current_board)
+    except:
+        flat = torch.flatten(brd)
         #the item() remove the tensor attribute, we convert to integer to remove float, then string
-        vector += str(int(flat[i].item()))
-    return vector
+    return ''.join([str(int(x.item())) for x in flat])
 
+#I don't even think this function is necessary.
 def devectorize(state):
     """
     Takes a database string and converts it into a torch tensor
@@ -80,32 +80,72 @@ def devectorize(state):
     #database is ["States", "Visits", "Value]
 def recordgsv(filename,brd, won):   #Record game state value
     """
-    This function takes a board state, converts it to a vector, and stores it in a csv file.
+    This function takes a board state (or vectorized state), converts it to a vector, and stores it in a csv file.
     It also stores and updates the value and total number of visits for that game state.
     won variable is -1, 0, 1 for loss, tie, and win respectively
     """
     #load the dataframe
-    df = pd.read_csv(filename)
-    thestate = vectorize(brd)
-    if thestate in df["State"]:
+    df = pd.read_csv(filename, dtype = {"State": str})
+    try:
+        thestate = vectorize(brd)
+    except:
+        thestate = brd
+    #in checks against the index, values specifies to 
+    if thestate in df["State"].values:
         #loc finds the appropriate entry
         df.loc[df["State"] == thestate, "Visits"] += 1
-        #update average
+        #update average formula.
+        #loc looks in a column for a specific value(s), then pulls the appropriate
+        #value from the other column
         df.loc[df["State"] == thestate, "Value"] += \
-            (won + df.loc[df["State"] == thestate, "Visits"]) \
+            (won - df.loc[df["State"] == thestate, "Value"]) \
             /df.loc[df["State"] == thestate, "Visits"]
     else:
         df = df.append({"State": thestate, "Visits": 1, "Value": won}, ignore_index = True)
+    #Overwrites the old database. index = false or it brings the index col into the csv
     df.to_csv(filename, mode = 'w', index = False)
         
     
     
+#Load game state value
+def loadgsv(brd):
+    """
+    Given a board state, look at the database and move towards the state with the 
+    highest value. This is an epsilon greedy policy, and has a changeable parameter
+    epsilon which determines exploration chance.
+    """
+    file = ""
+    epsilon = random.random()
+    #Exploration: check beginning otherwise don't bother with the rest of the code
+    if epsilon <= 0.01:
+        return brd.drop_piece(random.choice(brd.actions()))
+    else:
+        if brd.player == 1:
+            file = "konnectp1.csv"
+        elif brd.player == 2:
+            file = "konnectp2.csv"
+        else:
+            print("Player value error")
+        df = pd.read_csv(file, dtype = {"State": str})
+        wincounter = torch.zeros(7)
+        #Loop through different moves and pick the highest value state
+        for col in brd.actions():
+            workboard = copy.deepcopy(brd)
+            workboard.drop_piece(col)
+            if vectorize(workboard) in df["State"].values:
+                wincounter[col] = df.loc[df["State"] == vectorize(workboard), "Value"]
+            else:
+                wincounter[col] = 0
+        if sum(wincounter) <= 0:
+            return montecarlo()
+        else:
+            print(wincounter + " Values")
+            return brd.drop_piece(torch.argmax(wincounter))
+            
     
-def retrievegsv(filename):
-    """
-    Opens up the database of state value pairs
-    """
-
+                
+            
+        
 
                 
 
