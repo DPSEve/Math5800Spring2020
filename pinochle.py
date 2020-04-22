@@ -29,27 +29,27 @@ if german == True: #For Binokel
     suitshortnames[1] = "●" #Not sure the code, found online, Unicode 25C0, BLACK CIRCLE
 
 
-def melds(trumps): #returns list of all melds in the form [ ..., [ [ list of cards in [rank, suit] form ] , point value, class] ,... ]
+def melds(trumps): #returns list of all melds in the form [ ..., [ [ list of cards in [rank, suit] form ] , point value, class, meld name] ,... ]
     #class is used to determine whether or not re-melding is allowed.
     nottrumps = [0, 1, 2, 3]
     nottrumps.remove(trumps) #list of non-trump suits
 
     #Recall that runs replace royal marriages. Not accounted for here.
-    run = [ [[1, trumps], [2, trumps], [3, trumps], [4, trumps], [5, trumps]] , 150, 0 ] # Run, 150 points
-    royalmarriage = [ [[2, trumps], [3, trumps]], 40, 0] # Royal Marriage (King and Queen of trumps), 40 points
+    run = [ [[1, trumps], [2, trumps], [3, trumps], [4, trumps], [5, trumps]] , 150, 0, "Run in Trumps" ] # Run, 150 points
+    royalmarriage = [ [[2, trumps], [3, trumps]], 40, 0, "Royal Marriage"] # Royal Marriage (King and Queen of trumps), 40 points
 
-    commonmarriage1 = [ [[2, nottrumps[0]], [3, nottrumps[0]]], 20, 0] # Common Marriage 1 (King and Queen of non-trump), 20 points
-    commonmarriage2 = [ [[2, nottrumps[1]], [3, nottrumps[1]]], 20, 0] # Common Marriage 2, 20 points
-    commonmarriage3 = [ [[2, nottrumps[2]], [3, nottrumps[2]]], 20, 0] # Common Marriage 3, 20 points
-    dix = [ [[0, trumps]], 10, 0] # Dix (Nine of Trumps), 10 points
-    acesaround = [ [ [5, trumps], [5, nottrumps[0]], [5, nottrumps[1]], [5, nottrumps[2]] ], 100, 1] # Aces Around (one in each suit), 100 points
-    kingsaround = [ [ [4, trumps], [4, nottrumps[0]], [4, nottrumps[1]], [4, nottrumps[2]] ], 80, 1] # Kings Around, 80 points
-    queensaround = [ [ [3, trumps], [3, nottrumps[0]], [3, nottrumps[1]], [3, nottrumps[2]] ], 60, 1] # Queens Around, 60 points
-    jacksaround = [ [ [2, trumps], [2, nottrumps[0]], [2, nottrumps[1]], [2, nottrumps[2]] ], 40, 1] # Jacks Around, 40 points
+    commonmarriage1 = [ [[2, nottrumps[0]], [3, nottrumps[0]]], 20, 0, "Common Marriage in " + suitnames[nottrumps[0]]] # Common Marriage 1 (King and Queen of non-trump), 20 points
+    commonmarriage2 = [ [[2, nottrumps[1]], [3, nottrumps[1]]], 20, 0, "Common Marriage in " + suitnames[nottrumps[1]]] # Common Marriage 2, 20 points
+    commonmarriage3 = [ [[2, nottrumps[2]], [3, nottrumps[2]]], 20, 0, "Common Marriage in " + suitnames[nottrumps[2]]] # Common Marriage 3, 20 points
+    dix = [ [[0, trumps]], 10, 0, "Dix, " + ranknames[0] + " of " + suitnames[trumps]] # Dix (Nine of Trumps), 10 points
+    acesaround = [ [ [5, trumps], [5, nottrumps[0]], [5, nottrumps[1]], [5, nottrumps[2]] ], 100, 1, ranknames[5] + "s Around"] # Aces Around (one in each suit), 100 points
+    kingsaround = [ [ [4, trumps], [4, nottrumps[0]], [4, nottrumps[1]], [4, nottrumps[2]] ], 80, 1, ranknames[3] + "s Around"] # Kings Around, 80 points
+    queensaround = [ [ [3, trumps], [3, nottrumps[0]], [3, nottrumps[1]], [3, nottrumps[2]] ], 60, 1, ranknames[2] + "s Around"] # Queens Around, 60 points
+    jacksaround = [ [ [2, trumps], [2, nottrumps[0]], [2, nottrumps[1]], [2, nottrumps[2]] ], 40, 1, ranknames[1] + "s Around"] # Jacks Around, 40 points
 
     #Recall that double Pinochle replaces Pinochle. Not accounted for here.
-    pinochle = [ [[2, 3], [1, 1]], 40, 2] #Pinochle, Queen of Spades + Jack of Diamonds, 40 points
-    doublepinochle = [ [[2, 3], [1, 1], [2, 3], [1, 1]], 300, 2] #Double Pinochle. Two Pinochles. Make sure to check for this properly! 300 points
+    pinochle = [ [[2, 3], [1, 1]], 40, 2, "Pinochle"] #Pinochle, Queen of Spades + Jack of Diamonds, 40 points
+    doublepinochle = [ [[2, 3], [1, 1], [2, 3], [1, 1]], 300, 2, "DOUBLE PINOCHLE!"] #Double Pinochle. Two Pinochles. Make sure to check for this properly! 300 points
     meldlist = [run, royalmarriage, commonmarriage1, commonmarriage2, commonmarriage3, dix, acesaround, kingsaround, queensaround, jacksaround, pinochle, doublepinochle]
     return meldlist
 
@@ -254,8 +254,8 @@ upcard = deck.upcard()
 trumps = upcard.suit + 0
 # 1.)
 
-print(possiblemelds(leader, trumps))
-
+for melds in possiblemelds(leader, trumps):
+    print(melds[3])
 
 
 # Standard AI Rules:
