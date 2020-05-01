@@ -61,11 +61,11 @@ V(s) = \frac{\sum wins -\sum losses}{visits}
 <li><p><a href="https://arxiv.org/abs/1902.00506">The Hanabi Challenge: A New Frontier for AI Research</a> {Chris: Introduces the game, includes an open source self-playing program, and compares results of learning-agent bots with rule-based bots, collaborations between such, et cetera. No large data sets seem to be involved - unsure how it relates to data science. Published 2020 in AI (Elsevier)}</p></li>
 <li><p>The associated platform for this article is found at: https://github.com/deepmind/hanabi-learning-environment</p></li>
 <li><p><a href="https://openreview.net/forum?id=B1xm3RVtwB">Simplified Action Decoder for Deep Multi-Agent Reinforcement Learning 2020</a></p></li>
-<li><p><a href="https://colab.research.google.com/drive/1Cvs4GuFvHEdvb7tVJQVvQOviAkRf97r7">With associated code</a> {Chris: What does the code actually do?}</p></li>
+<li><p><a href="https://colab.research.google.com/drive/1Cvs4GuFvHEdvb7tVJQVvQOviAkRf97r7">With associated code</a> 
 <li><p><a href="https://explore.openaire.eu/search/publication?articleId=od________18::0e0aaae71c134766acf27427f97258be">Bayesian Action Decoder</a> This reference dicusses multi-agent learning models, and introduces a simple “two matrix game” as an example of a multi-agent game. The aforementioned code plays this game.</p></li>
 <li><p><a href="https://arxiv.org/abs/1810.05587">A Survey and Critique of Multiagent Deep Reinforcement Learning</a> This paper provides an overview of multi-agent learning techniques and algorithms in the literature. This is a helpful paper for exploring possibilities.</p></li>
 <li><p><a href="https://mitpress.mit.edu/books/reinforcement-learning-second-edition">Reinforcement Learning by Sutton and Barto</a> A fundamental book on reinforcement learning, the primary machine learning topic for teaching machines to learn games.</p></li>
-<li><p>Games and Decisions by Luce and Raiffa. {Chris: This is an older text by Dover that Chris has read. It goes over the mathematical fundamentals of combinatorial game theory, includes definitions and descriptions for zero-sum games, imperfecti information, et cetera. A more modern reference incorporating algorithms and machine learning would be good.}</p></li>
+<li><p>Games and Decisions by Luce and Raiffa. </p></li>
 </ul>
 </body>
 </html>
