@@ -24,7 +24,7 @@ $$
  This is often notationally represented in the following way. 
  
 $$
-(S, A, \{P_{sa}}, \gamma, R)
+(S, A, \{P_{sa}\}, \gamma, R)
 $$
 for the states, actions, state transition distribution, discount factor, and rewards. The state transition distribution determines the probabilities for moving into a state after taking a certain action, and gamma is a discounting factor that weights earlier rewards over later rewards $(0 < \gamma \leq 1)$.
 
@@ -33,9 +33,9 @@ In the FMDP, there are a finite amount of states, actions, and rewards. In our C
 When we are in a state, we have a selection of actions that we can take. Each action is followed by an action of our opponent, which presents a new state before us. If our opponent is predictable, we could operationalize a state transition probability.
 
 $$
-p(s^',r|s,a) = Pr\{S_t = s', R_t = r| S_{t-1}=s, A_{t-l} = a\}
+p(s^{'},r|s,a) = Pr\{S_{t} = s^{'}, R_{t} = r| S_{t-1}=s, A_{t-l} = a\}
 $$
-which is the probability of the state $s^'$ and reward $r$ happening after we take the action $a$ in the current state $s$. In the Connect Four problem, this represents likely following board states that is are presented to us after we and our opponent make our moves. The probabilities would represent the likelyhood our opponent takes which actions. Although perhaps counterintuitive, our state space only represents the board states that are **presented to the agent**.
+which is the probability of the state $s^{'}$ and reward $r$ happening after we take the action $a$ in the current state $s$. In the Connect Four problem, this represents likely following board states that is are presented to us after we and our opponent make our moves. The probabilities would represent the likelyhood our opponent takes which actions. Although perhaps counterintuitive, our state space only represents the board states that are **presented to the agent**.
 
 In a general problem, the state transition probability could repreent many things, such as the likely outcomes of a slot machine. The flexible nature of the Markhov Decision Process allows it to be applied to many different problems.
 
@@ -60,7 +60,7 @@ Our python defines a Connect Four board, and allows us to simulate games. To beg
 
 We also implement a beginning Monte Carlo value estimation method. First, we generated a state database using the Monte Carlo AI. The value of the state was determined by averaging Bellman equation above. 
 $$
-V(s) = \frac{\sum\textnormal{wins} -\sum\textnormal{losses}}{\textnormal{visits}}
+V(s) = \frac{\sum wins -\sum losses}{visits}
 $$
 Then, the policy is to make the move that generates the best value, with a small chance to take a random move to continue exploring different actions. This is often called a $\epsilon$ greedy policy, because it takes the currently best perceived action with an $\epsilon$ chance to explore.
 
@@ -86,13 +86,4 @@ Finally, we have yet to implement a neural network. The plan is to use pytorch o
 - Games and Decisions by Luce and Raiffa. 
       {Chris: This is an older text by Dover that Chris has read. It goes over the mathematical fundamentals of combinatorial game theory, includes definitions and descriptions for zero-sum games, imperfecti information, et cetera. A more modern reference incorporating algorithms and machine learning would be good.}
       
-                        To Do List
-- Split py file into several different files and make interaction very clear
-- Clean up code and comment it
-- Fix bug that happens when board is full
-- Function to combine .csv files
-- Function convert .csv files data to Evelyn version
-- Learn pytorch Stuph
-- Fit code into Pytorch
-- Neural Network I guess
-- Fix data-based apparoach AI
+                      
