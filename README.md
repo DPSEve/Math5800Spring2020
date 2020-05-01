@@ -22,7 +22,7 @@
 <h1 id="math5800-spring-2020-mathematical-aspects-of-machine-learning">Math5800 Spring 2020: Mathematical Aspects of Machine Learning</h1>
 <p>This is the Github Page for Math 5800 Spring 2020 at UCONN, taught by Professor <a href="https://jeremy9959.net/">Jeremy Teitelbaum</a></p>
 <p>Group members Christopher Hayes, Evelyn Nitch-Griffin</p>
-<p>We are interested in reinforcment learning problems in games. In this project, we focused on Connect Four, a zero-sum game between two players. The goal was to create a functioning reinforcment learning model in Python.</p>
+<p>We are interested in reinforcement learning problems in games. In this project, we focused on Connect Four, a zero-sum game between two players. The goal was to create a functioning reinforcment learning model in Python.</p>
 <h2 id="reinforcement-learning">Reinforcement Learning</h2>
 <p>Reinforcment learning is a machine learning problem where an agent (such as a person, program, or robot) is attempting a maximize a reward output. For Connect Four, our agent is the player, and our reward output is winning or losing the game. The agent interacts with its environment and receives rewards and penalties based on its actions. In an attempt to maximine rewards, it learns the optimal behavior overtime. A famous example of this being applied recently is <a href="https://deepmind.com/research/case-studies/alphago-the-story-so-far">AlphaGo</a>, a computer program developed by Deepmind which consistently beat top human Go players.</p>
 <h4 id="exploration-vs-exploitation">Exploration vs Exploitation</h4>
@@ -34,7 +34,7 @@ S_0, A_0, R_0, \rightarrow S_1, A_1, R_1 \rightarrow ...
 \]</span></p>
 <p>This is often notationally represented in the following way.</p>
 <p><span class="math display">\[
-(S, A, \{P_{sa}\}, \gamma, R)
+(S, A, \{P_{s,a}\}, \gamma, R)
 \]</span> for the states, actions, state transition distribution, discount factor, and rewards. The state transition distribution determines the probabilities for moving into a state after taking a certain action, and gamma is a discounting factor that weights earlier rewards over later rewards <span class="math inline">\((0 &lt; \gamma \leq 1)\)</span>.</p>
 <p>In the FMDP, there are a finite amount of states, actions, and rewards. In our Connect Four problem, our states would be the possible board configurations, our actions would be placing a piece in a (non-full) column, and our rewards are +1 for winning, 0 for ties, and -1 for losing. Here the state transition probability represents our opponent’s move. We choose <span class="math inline">\(\gamma\)</span> to be 1, which means we don’t discount; we only care about winning in the long term.</p>
 <p>When we are in a state, we have a selection of actions that we can take. Each action is followed by an action of our opponent, which presents a new state before us. If our opponent is predictable, we could operationalize a state transition probability.</p>
